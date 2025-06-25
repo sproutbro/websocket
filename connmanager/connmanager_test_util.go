@@ -1,10 +1,10 @@
 package connmanager
 
 import (
+	"myonly/global"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"webgame/socket/global"
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/require"

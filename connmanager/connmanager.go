@@ -2,7 +2,7 @@ package connmanager
 
 import (
 	"log"
-	"webgame/socket/global"
+	"myonly/global"
 
 	"github.com/gorilla/websocket"
 )

@@ -2,17 +2,18 @@ package main
 
 import (
 	"log"
+	"myonly/ws"
 	"net/http"
-	"webgame/socket/ws"
 )
 
+// main 함수는 웹서버를 시작하고 /ws 엔드포인트에 웹소켓 핸들러를 연결합니다.
 func main() {
 	mux := http.NewServeMux()
 
-	// 웹소켓 엔드포인트 등록
+	// 웹소켓 핸들러 등록
 	mux.HandleFunc("/ws", ws.Handler)
 
-	log.Println("WebSocket 서버 실행 중: ws://localhost:8080/ws")
+	log.Println("서버 시작: http://localhost:8080")
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		log.Fatal("서버 실패:", err)
