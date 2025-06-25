@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"sync"
@@ -12,7 +14,6 @@ import (
 // 예: roomMap["room1"]["alice"] = conn
 var (
 	connMap = make(map[string]*websocket.Conn)
-	roomMap = make(map[string]map[string]*websocket.Conn)
 	mutex   = &sync.Mutex{}
 )
 
@@ -24,8 +25,11 @@ func AddConn(conn *websocket.Conn) {
 }
 
 // AddConnWithID 는 특정 ID와 함께 클라이언트를 등록합니다.
-func AddConnWithID(id string, conn *websocket.Conn) {
+func AddConnWithID(conn *websocket.Conn) {
 	mutex.Lock()
+	b := make([]byte, 4)
+	rand.Read(b)
+	id := hex.EncodeToString(b)
 	connMap[id] = conn
 	mutex.Unlock()
 }
