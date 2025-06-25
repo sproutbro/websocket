@@ -218,3 +218,28 @@ func connectClientWithID(t *testing.T, url string) *websocket.Conn {
 	require.NoError(t, err, "웹소켓 연결 실패")
 	return conn
 }
+
+// TestJsonRouting 는 클라이언트 A가 B에게 JSON 메시지를 보냈을 때,
+// B만 그 메시지를 수신하는지 확인합니다.
+func TestJsonRouting(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(ws.Handler))
+	defer server.Close()
+
+	base := "ws" + server.URL[4:]
+	connA := connectClientWithID(t, base+"?id=alice")
+	defer connA.Close()
+
+	connB := connectClientWithID(t, base+"?id=bob")
+	defer connB.Close()
+
+	jsonMsg := `{"to":"bob", "msg":"hello bob!"}`
+	err := connA.WriteMessage(websocket.TextMessage, []byte(jsonMsg))
+	require.NoError(t, err)
+
+	// bob은 메세지를 받아야함
+	checkMessage(t, connB, "hello bob!")
+
+	// alice는 받으면 안 됨
+	connA.SetReadDeadline(time.Now().Add(1 * time.Second))
+	require.Equal(t, 2, len(ws.GetAllClients()), "현재 접속 유저")
+}

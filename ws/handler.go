@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -13,8 +14,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// Handler 는 웹소켓 연결을 처리하고,
-// 받은 메시지를 모든 연결된 클라이언트에게 Broadcast합니다.
+// Handler 는 웹소켓 연결을 수락하고, 클라이언트가 보낸 JSON 메시지를
+// 파싱하여 특정 사용자에게 전송합니다.
 func Handler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
@@ -33,28 +34,39 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer func() {
-			RemoveConnByID(id) // 👈 클라이언트 제거
+			RemoveConnByID(id)
 			conn.Close()
 		}()
 
 		for {
-			msgType, msg, err := conn.ReadMessage()
+			msgType, raw, err := conn.ReadMessage()
 			if err != nil {
 				log.Println("읽기 실패:", err)
 				break
 			}
 
-			log.Printf("클라이언트로부터 받은 메시지: %s", msg)
+			var msg Message
+			if err := json.Unmarshal(raw, &msg); err != nil {
+				log.Println("메시지 파싱 실패:", err)
+				continue
+			}
 
-			// 받은 메시지를 그대로 다시 보냄 (echo)
-			err = conn.WriteMessage(msgType, msg)
+			log.Printf("[%s] - [%s]: %s", id, msg.To, msg.Msg)
+
+			// 지정한 사용자에게 메시지 전송
+			if err := SendTo(msg.To, []byte(msg.Msg)); err != nil {
+				log.Println("전송 실패:", err)
+			}
+
+			// 모든 연결된 클라이언트에게 메시지 전송
+			Broadcast(raw)
+
+			// 본인에게 다시
+			err = conn.WriteMessage(msgType, raw)
 			if err != nil {
 				log.Println("쓰기 실패:", err)
 				break
 			}
-
-			// 모든 연결된 클라이언트에게 메시지 전송
-			Broadcast(msg)
 		}
 	}()
 }
