@@ -8,8 +8,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// roomMap 은 채팅방 이름별로 클라이언트 ID와 연결을 저장합니다.
+// 예: roomMap["room1"]["alice"] = conn
 var (
 	connMap = make(map[string]*websocket.Conn)
+	roomMap = make(map[string]map[string]*websocket.Conn)
 	mutex   = &sync.Mutex{}
 )
 
@@ -88,4 +91,30 @@ func SendTo(id string, message []byte) error {
 	}
 
 	return conn.WriteMessage(websocket.TextMessage, message)
+}
+
+// AddConnWithRoom 은 특정 채팅방에 속한 클라이언트를 등록합니다.
+func AddConnWithRoom(room, id string, conn *websocket.Conn) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if _, exists := roomMap[room]; !exists {
+		roomMap[room] = make(map[string]*websocket.Conn)
+	}
+	roomMap[room][id] = conn
+}
+
+// BroadcastToRoom 은 지정한 방에 속한 모든 사용자에게 메시지를 전송합니다.
+func BroadcastToRoom(room string, message []byte) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	for id, conn := range roomMap[room] {
+		err := conn.WriteMessage(websocket.TextMessage, message)
+		if err != nil {
+			log.Printf("[%s] 메시지 전송 실패: %v", id, err)
+			conn.Close()
+			delete(roomMap[room], id)
+		}
+	}
 }

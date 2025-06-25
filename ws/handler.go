@@ -18,7 +18,9 @@ var upgrader = websocket.Upgrader{
 // 파싱하여 특정 사용자에게 전송합니다.
 func Handler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	if id == "" {
+	room := r.URL.Query().Get("room")
+
+	if id == "" || room == "" {
 		http.Error(w, "id 쿼리 파라미터 필요", http.StatusBadRequest)
 		return
 	}
@@ -29,8 +31,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("ID %s 연결됨 (%s)", id, conn.RemoteAddr())
-	AddConnWithID(id, conn)
+	log.Printf("ID %s 연결됨 (Room: %s)", id, room)
+	// conn.RemoteAddr()
+	// AddConnWithID(id, conn)
+	AddConnWithRoom(room, id, conn)
 
 	go func() {
 		defer func() {
@@ -44,6 +48,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				log.Println("읽기 실패:", err)
 				break
 			}
+
+			log.Printf("[%s] - [%s] %s", id, room, raw)
+			BroadcastToRoom(room, raw)
 
 			var msg Message
 			if err := json.Unmarshal(raw, &msg); err != nil {

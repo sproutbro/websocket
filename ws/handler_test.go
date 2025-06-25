@@ -243,3 +243,36 @@ func TestJsonRouting(t *testing.T) {
 	connA.SetReadDeadline(time.Now().Add(1 * time.Second))
 	require.Equal(t, 2, len(ws.GetAllClients()), "현재 접속 유저")
 }
+
+// TestChatRoomBroadcast 는 같은 방에 있는 사람들끼리만 메시지를 주고받는지 테스트합니다.
+func TestChatRoomBroadcast(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(ws.Handler))
+	defer server.Close()
+
+	base := "ws" + server.URL[4:]
+
+	// 같은 방에 있는 두 명
+	alice := connectClientWithID(t, base+"?id=alice&room=room1")
+	defer alice.Close()
+	bob := connectClientWithID(t, base+"?id=bob&room=room1")
+	defer bob.Close()
+
+	// 다른 방에 있는 한 명
+	charlie := connectClientWithID(t, base+"?id=charlie&room=room2")
+	defer charlie.Close()
+
+	// alice가 메시지 전송
+	message := "hi room1!"
+	err := alice.WriteMessage(websocket.TextMessage, []byte(message))
+	require.NoError(t, err)
+
+	// bob은 받아야 함
+	checkMessage(t, bob, message)
+
+	ws.AddConnWithID("aaaa", charlie)
+	ws.AddConnWithID("123", bob)
+	ws.AddConnWithID("aa", alice)
+	// charlie는 받으면 안 됨
+	charlie.SetReadDeadline(time.Now().Add(1 * time.Second))
+	require.Equal(t, 3, len(ws.GetAllClients()), "세명")
+}
