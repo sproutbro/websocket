@@ -1,13 +1,14 @@
 package main
 
-import (
-	"log"
-	"myonly/ws"
-	"net/http"
-)
+import ws26socket "myonly/ws26/socket"
 
 // main 함수는 웹서버를 시작하고 /ws 엔드포인트에 웹소켓 핸들러를 연결합니다.
 func main() {
+	ws26socket.Ws26socketMain()
+}
+
+/*
+func ws() {
 	mux := http.NewServeMux()
 
 	// 웹소켓 핸들러 등록
@@ -19,3 +20,4 @@ func main() {
 		log.Fatal("서버 실패:", err)
 	}
 }
+*/
