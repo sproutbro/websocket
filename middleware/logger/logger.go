@@ -25,8 +25,6 @@ type Logger interface {
 
 func NewLogger(env string) Logger {
 	switch env {
-	case "test":
-		return &MockLogger{}
 	case "dev":
 		return &ConsoleLogger{}
 	case "prod":

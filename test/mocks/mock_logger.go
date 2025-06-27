@@ -1,4 +1,4 @@
-package logger
+package mocks
 
 import "errors"
 
