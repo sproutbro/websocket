@@ -1,39 +1,40 @@
+// File: logger.go
+// Author: bbcode
+// Date: 2025-06-27
+//
+// Description:
+//   - 개발로그: ConsoleLogger
+//   - 서버로그: FileLogger
+//   - JSON로그: JsonLogger
+//   - 테스트로그: MockLogger
+//
+// Related files:
+//   - package/logger
+//
+// Test Strategy:
+//   - 아직안했다 환경변수 적용도 남았다
+//   - 오늘 머리털이 빠지는거 같냐..
+//
+// Last Modified: 2025-06-28 by JackieChan
 package logger
 
-import (
-	"log"
-	"os"
-	"sync"
-)
-
-// Logger 구조체: 원하는 방식대로 확장 가능
-type Logger struct {
-	logger *log.Logger
+type Logger interface {
+	Info(msg string)
+	Error(err error)
 }
 
-var (
-	instance *Logger   // 싱글톤 인스턴스
-	once     sync.Once // 단 한 번만 실행 보장
-)
-
-// GetLogger: 싱글톤 객체 반환
-func GetLogger() *Logger {
-	once.Do(func() {
-		instance = &Logger{
-			logger: log.New(os.Stdout, "[LOG] ", log.Ldate|log.Ltime|log.Lshortfile),
-		}
-	})
-	return instance
-}
-
-// Info 로그: 일반 정보 출력
-func (l *Logger) Info(msg string) {
-	l.logger.SetPrefix("[INFO] ")
-	l.logger.Println(msg)
-}
-
-// Error 로그: 에러 메시지 출력
-func (l *Logger) Error(msg string) {
-	l.logger.SetPrefix("[ERROR] ")
-	l.logger.Println(msg)
+func NewLogger(env string) Logger {
+	switch env {
+	case "test":
+		return &MockLogger{}
+	case "dev":
+		return &ConsoleLogger{}
+	case "prod":
+		logger, _ := NewFileLogger("./app.log")
+		return logger
+	case "cloud":
+		return &JsonLogger{}
+	default:
+		return &ConsoleLogger{}
+	}
 }
