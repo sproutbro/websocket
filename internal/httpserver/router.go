@@ -1,4 +1,4 @@
-package router
+package httpserver
 
 import (
 	"fmt"
@@ -15,7 +15,6 @@ func (h *HelloHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func NewRouter() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// 핸들러에 로깅 미들웨어 감싸기
 	loggedHandler := middleware.WithLogging(&HelloHandler{})
 	mux.Handle("/", loggedHandler)
 

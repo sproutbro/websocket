@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"myonly/internal/httpserver/router"
+	router "myonly/internal/httpserver"
 	"net/http"
 )
 
