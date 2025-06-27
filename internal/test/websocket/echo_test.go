@@ -29,42 +29,34 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-		_ = conn.WriteMessage(mt, msg) // Echo
+		_ = conn.WriteMessage(mt, msg)
 	}
 }
 
-// 테스트 서버용 WebSocket 핸들러 (Echo)
+// 테스트 서버용 WebSocket 핸들러
 func TestWebSocketEcho(t *testing.T) {
-	// 1. 가짜 HTTP 서버 생성
 	server := httptest.NewServer(http.HandlerFunc(echoHandler))
 	defer server.Close()
 
-	// 2. 실제 WebSocket URL로 변환 (ws:// → http://에서 호스트 추출)
 	url := "ws" + server.URL[4:] + "/ws"
 
-	// 3. 클라이언트 연결 (Dial)
 	ws, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		t.Fatalf("WebSocket 연결 실패: %v", err)
 	}
 	defer ws.Close()
 
-	// 4. 테스트 메시지
 	msgToSend := "형님 테스트 메시지!"
-
-	// 5. 메시지 전송
 	err = ws.WriteMessage(websocket.TextMessage, []byte(msgToSend))
 	if err != nil {
 		t.Fatalf("메시지 전송 실패: %v", err)
 	}
 
-	// 6. 응답 수신
 	_, msgReceived, err := ws.ReadMessage()
 	if err != nil {
 		t.Fatalf("메시지 수신 실패: %v", err)
 	}
 
-	// 7. 결과 비교
 	if string(msgReceived) != msgToSend {
 		t.Errorf("받은 메시지 다름. 예상: %s, 실제: %s", msgToSend, msgReceived)
 	}

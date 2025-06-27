@@ -1,12 +1,4 @@
-package mocks
-
-import (
-	"net/http"
-	"net/http/httptest"
-)
 ```go
-
-
 router := router.NewRouter()
 
 // 가짜요청해더
@@ -30,22 +22,8 @@ if !strings.Contains(body, tc.wantOutput) {
 	t.Errorf("response body mismatch: got %q, want %q", body, tc.wantOutput)
 }
 ```
-var dd = {
-	/*
-	*/
 
-	// Fake 요청
-	_ := 
-
-	// 기록기
-	_ := 
-
-	/*
-		h.Serve(w, req)
-	*/
-}
-
-func data() {
+```go
 	tests := []struct {
 		path       string
 		wantOutput string
@@ -58,34 +36,29 @@ func data() {
 	if tests != nil {
 		// log.Fatal()
 	}
+```
 
+```go
+route := []struct {
+	name       string
+	method     string
+	path       string
+	wantStatus int
+	wantBody   string
+}{
+	{
+		name:       "루트 경로 응답 테스트",
+		method:     http.MethodGet,
+		path:       "/",
+		wantStatus: http.StatusOK,
+		wantBody:   "Hello from Router!",
+	},
+	{
+		name:       "없는 경로 응답 테스트",
+		method:     http.MethodGet,
+		path:       "/not-found",
+		wantStatus: http.StatusNotFound,
+		wantBody:   "404 page not found",
+	},
 }
-
-func routePath() {
-	route := []struct {
-		name       string
-		method     string
-		path       string
-		wantStatus int
-		wantBody   string
-	}{
-		{
-			name:       "루트 경로 응답 테스트",
-			method:     http.MethodGet,
-			path:       "/",
-			wantStatus: http.StatusOK,
-			wantBody:   "Hello from Router!",
-		},
-		{
-			name:       "없는 경로 응답 테스트",
-			method:     http.MethodGet,
-			path:       "/not-found",
-			wantStatus: http.StatusNotFound,
-			wantBody:   "404 page not found",
-		},
-	}
-
-	if route == nil {
-
-	}
-}
+```
